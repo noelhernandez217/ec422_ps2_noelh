@@ -39,4 +39,6 @@ head(unemp)
 only_oregon <- filter(unemp, symbol == "ORUR")
 head(only_oregon)
 
+only_cali <- filter(unemp, symbol == "CAUR")
+head(only_cali)
 
