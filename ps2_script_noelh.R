@@ -4,7 +4,7 @@ library(tidyverse)
 # Commeting this stuff out because we don't want to be redownloading the data 
 
 # unemp_raw <- tq_get(
-#  c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
+#  c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"), <- is this the symbols? 
 #  get  = "economic.data",
 #  from = "1976-01-01"
 # )
@@ -24,10 +24,12 @@ unemp <- unemp_raw |>
   mutate(
     region = case_when(
       symbol == "UNRATE" ~ "United States",
-      symbol == "___"    ~ "Oregon",
-      
-      # ... fill in the rest
-    )
+      # I set the matching symbols here
+      symbol == "ORUR" ~ "Oregon",
+      symbol == "CAUR" ~ "California", 
+      symbol == "TXUR" ~ "Texas", 
+      symbol == "NYUR" ~ "New York"
+          )
   )
 
 head(unemp)
