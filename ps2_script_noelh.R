@@ -33,3 +33,10 @@ unemp <- unemp_raw |>
   )
 
 head(unemp)
+
+# check to see if it works 
+
+only_oregon <- filter(unemp, symbol == "ORUR")
+head(only_oregon)
+
+
