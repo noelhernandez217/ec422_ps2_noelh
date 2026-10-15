@@ -1,14 +1,18 @@
 library(tidyquant)
 library(tidyverse)
 
-unemp_raw <- tq_get(
-  c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
-  get  = "economic.data",
-  from = "1976-01-01"
-)
+# Commeting this stuff out because we don't want to be redownloading the data 
 
-head(unemp_raw)
+# unemp_raw <- tq_get(
+#  c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
+#  get  = "economic.data",
+#  from = "1976-01-01"
+# )
 
-dir.create("data", showWarnings = FALSE)
+# head(unemp_raw)
 
-write_rds(unemp_raw, "data/unemp_raw.rds")
+# dir.create("data", showWarnings = FALSE)
+
+# write_rds(unemp_raw, "data/unemp_raw.rds")
+
+unemp_raw = read_rds("data/unemp_raw.rds")
