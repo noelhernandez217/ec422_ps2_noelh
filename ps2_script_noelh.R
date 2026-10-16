@@ -94,4 +94,17 @@ unemp_top_decreases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_min
 unemp_top_decreases_no_covid
 
 
+# Standard ggplot, I used the geeksforgeeks documentation. Helps a lot its really quick and easy to follow
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +        # or geom_col(), geom_point(), etc.
+  labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
+  theme_minimal()
+
+
+
+# facet_wrap splits this up and gives each different region their own plot
+ggplot(unemp, aes(x = date, y = unemployment_rate)) +
+  geom_line() + facet_wrap(~ region)      # or geom_col(), geom_point(), etc.
+  labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
+  theme_minimal()
 
