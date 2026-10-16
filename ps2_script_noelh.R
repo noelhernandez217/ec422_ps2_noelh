@@ -101,10 +101,38 @@ ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
   theme_minimal()
 
 
-
 # facet_wrap splits this up and gives each different region their own plot
 ggplot(unemp, aes(x = date, y = unemployment_rate)) +
   geom_line() + facet_wrap(~ region)      # or geom_col(), geom_point(), etc.
   labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
   theme_minimal()
+  
+  
+# Bar Chart
+  
+ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, fill = region)) +
+  geom_col()
+
+# Now I plot something I am interested in (Section 5.4)
+
+# IDEA: I am curious about plotting the unemployment rate change instead of the unemployment rate. I can overlap them. 
+# I was curious to see how the unemployment rate and the month to month changes would look alongside each other. 
+# Month to month, the change is steady. We see the massive spike during covid in 2020. 
+
+rate_vs_change <- ggplot(unemp, aes(x = date)) + 
+  geom_line(aes(y = unemployment_rate, color = "Unemployment Rate")) + 
+  geom_line(aes(y = unemployment_rate_change, color = "Unemployment Rate Change")) + 
+  facet_wrap(~ region) +
+  labs(
+    title = "Unemployment Rate vs Unemployment Rate Change", 
+    x = "Date",
+    y = "Percentage / Point Change",
+    color = "Metric"
+  )
+
+rate_vs_change
+
+
+  
+
 
