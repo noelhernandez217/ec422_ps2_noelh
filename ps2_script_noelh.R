@@ -64,3 +64,8 @@ unemp <- unemp |>
 
 head(unemp)
 
+unemp_recent <- filter(unemp, date > as.Date("2015-01-01"))
+head(unemp_recent)
+
+
+
