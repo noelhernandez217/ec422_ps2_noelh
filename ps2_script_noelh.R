@@ -77,5 +77,21 @@ unemp_summary <- unemp |>
 
 head(unemp_summary)
 
+# I was looking at the documentation, technically with_ties is set to true by default. I just put it in anyways 
+unemp_top_increases <- slice_max(unemp, unemployment_rate_change, n = 5, with_ties = TRUE)
+unemp_top_increases
+
+unemp_top_decreases <- slice_min(unemp, unemployment_rate_change, n = 5, with_ties = TRUE)
+unemp_top_decreases
+
+
+# excluding the year 2020 because of covid 
+
+unemp_top_increases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_max(unemployment_rate_change, n = 5, with_ties = TRUE)
+unemp_top_increases_no_covid  
+
+unemp_top_decreases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_min(unemployment_rate_change, n = 5, with_ties = TRUE)
+unemp_top_decreases_no_covid
+
 
 
