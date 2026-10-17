@@ -31,7 +31,21 @@ library(tidyverse)
 # write_rds(unemp_raw, "data/unemp_raw.rds")
 
 unemp_raw = read_rds("data/unemp_raw.rds")
-head(unemp_raw, 10)
+
+unemp <- unemp_raw |>
+  rename(unemployment_rate = price) |>
+  mutate(
+    region = case_when(
+      symbol == "UNRATE" ~ "United States",
+      # I set the matching symbols here
+      symbol == "ORUR" ~ "Oregon",
+      symbol == "CAUR" ~ "California", 
+      symbol == "TXUR" ~ "Texas", 
+      symbol == "NYUR" ~ "New York"
+          )
+  )
+
+head(unemp)
 ```
 
 ### 2. Wrangling
@@ -67,7 +81,7 @@ unemp_recent <- filter(unemp, date > as.Date("2015-01-01"))
 head(unemp_recent)
 ```
 
-Here is the summary statistics table. What it does is group by the region. So the granularity of this data is by state, and for each state we have the mean, minimum and maximum rates of unemployment. We also have a base of comparison by including the countries rate as a whole. 
+Here is the summary statistics table. What it does is group by the region. So the granularity of this data is by state, and for each state we have the mean, minimum and maximum rates of unemployment. We also have a base of comparison by including the countries rate as a whole.
 
 ```{r}
 unemp_summary <- unemp |>
@@ -81,7 +95,7 @@ unemp_summary <- unemp |>
 head(unemp_summary)
 ```
 
-This shows the top 5 month to month unemployment rate changes. That is captured by the unemployment_rate_change variable. 
+This shows the top 5 month to month unemployment rate changes. That is captured by the unemployment_rate_change variable.
 
 ```{r}
 unemp_top_increases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_max(unemployment_rate_change, n = 5, with_ties = TRUE)
@@ -89,7 +103,7 @@ unemp_top_increases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_max
 head(unemp_top_increases_no_covid)  
 ```
 
-This shows the top 5 lowest month to month unemployment rate changes. This uses the same variable as before. 
+This shows the top 5 lowest month to month unemployment rate changes. This uses the same variable as before.
 
 ```{r}
 unemp_top_decreases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_min(unemployment_rate_change, n = 5, with_ties = TRUE)
@@ -99,9 +113,9 @@ head(unemp_top_decreases_no_covid)
 
 ### 3. Visualization
 
-Here are the four 4 required plots. The last one is the one I created. 
+Here are the four 4 required plots. The last one is the one I created.
 
-This first plot is a line plot of the changing unemployment rate for all four states, and then the country as a whole. 
+This first plot is a line plot of the changing unemployment rate for all four states, and then the country as a whole.
 
 ```{r}
 ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
@@ -110,16 +124,16 @@ ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
   theme_minimal()
 ```
 
-This one splits the previous line plot where we have everything all together into separate line plots where we focus on the states and the country individually. This is done with the facet_wrap(~ region).  
+This one splits the previous line plot where we have everything all together into separate line plots where we focus on the states and the country individually. This is done with the facet_wrap(\~ region).
 
 ```{r}
 ggplot(unemp, aes(x = date, y = unemployment_rate)) +
-  geom_line() + facet_wrap(~ region)      # or geom_col(), geom_point(), etc.
+  geom_line() + facet_wrap(~ region) +    # or geom_col(), geom_point(), etc.
   labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
   theme_minimal()
 ```
 
-This bar plot uses the summary statistics table to compare the mean unemployment rates by region. 
+This bar plot uses the summary statistics table to compare the mean unemployment rates by region.
 
 ```{r}
 ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, fill = region)) +
@@ -131,7 +145,7 @@ ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, fil
   geom_col()
 ```
 
-This is the plot I created. I wanted to plot the month to month changes in unemployment and compare that to the actual unemployment rate by region. I used the same face_wrap(~ region) to do this for the four states and then the country. 
+This is the plot I created. I wanted to plot the month to month changes in unemployment and compare that to the actual unemployment rate by region. I used the same face_wrap(\~ region) to do this for the four states and then the country.
 
 ```{r}
 rate_vs_change <- ggplot(unemp, aes(x = date)) + 
@@ -141,7 +155,7 @@ rate_vs_change <- ggplot(unemp, aes(x = date)) +
   labs(
     title = "Unemployment Rate vs Unemployment Rate Change", 
     x = "Date",
-    y = "Percentage Point Change",
+    y = "Rate (%) / Month-to-Month (pp)",
     color = "Metric"
   )
 
@@ -150,4 +164,4 @@ rate_vs_change
 
 ### 4. Reflection
 
-
+I've used github before so the stage, commit, and push process isn't new to me. I've done it through the terminal before. I think I just needed a refresher on R coding. I've used other similar things like pandas so that helps a lot. I was taught R in EC 320 which I took last year and I did a lot more R in EC 421. I don't really like github copilot so I disabled it. I didn't have any crazy errors, I would just look at documentation online for how to use specific functions (geeksforgeeks is really helpful). I also haven't touched R studio since then and I didn't know you could link R studio to github like this so that was cool.
