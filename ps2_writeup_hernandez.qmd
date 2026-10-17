@@ -1,26 +1,153 @@
 ---
-title: "ps2_writeup_hernandez.qmd"
-format: html
-editor: visual
+title: "Problem Set 2"
+author: "Noel Hernandez"
+date: October 16th, 2026
+format:
+  html:
+    toc: true
+    embed-resources: true
 ---
 
-## Quarto
+**GitHub repo:** <https://github.com/noelhernandez217/ec422_ps2_noelh>
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+### 1. Data
 
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+This economic data is pulled from FRED. The time ranges start at 1979 and go up until the first of this month in 2026. The data contains three columns which are the symbol, date, and price columns. The symbols correspond to specific states or the country as a whole. Then we have the dates by year, month, and day.
 
 ```{r}
-1 + 1
+library(tidyquant)
+library(tidyverse)
+
+# unemp_raw <- tq_get(
+#   c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"), 
+#   get  = "economic.data",
+#   from = "1976-01-01"
+# )
+# 
+# head(unemp_raw)
+# 
+# dir.create("data", showWarnings = FALSE)
+# 
+# write_rds(unemp_raw, "data/unemp_raw.rds")
+
+unemp_raw = read_rds("data/unemp_raw.rds")
+head(unemp_raw, 10)
 ```
 
-You can add options to executable code like this
+### 2. Wrangling
+
+Setting up the main dataframe we will be working from.
 
 ```{r}
-#| echo: false
-2 * 2
+unemp <- unemp |>
+  arrange(region, date) |>
+  group_by(region) |>
+  mutate(
+    unemployment_rate = replace(
+      unemployment_rate,
+      date == as.Date("2025-10-01"),
+      unemployment_rate[date == as.Date("2025-09-01")]
+    )
+  ) |>
+  ungroup()
+
+unemp <- unemp |>
+  arrange(region, date) |>
+  group_by(region) |>
+  mutate(unemployment_rate_change = unemployment_rate - lag(unemployment_rate)) |>
+  ungroup()
+
+head(unemp)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Here is the table for recent unemployment.
+
+```{r}
+unemp_recent <- filter(unemp, date > as.Date("2015-01-01"))
+head(unemp_recent)
+```
+
+Here is the summary statistics table. What it does is group by the region. So the granularity of this data is by state, and for each state we have the mean, minimum and maximum rates of unemployment. We also have a base of comparison by including the countries rate as a whole. 
+
+```{r}
+unemp_summary <- unemp |>
+  group_by(region) |>
+  summarize(
+    mean_rate = mean(unemployment_rate, na.rm = TRUE),
+    min_rate  = min(unemployment_rate,  na.rm = TRUE),
+    max_rate  = max(unemployment_rate,  na.rm = TRUE)
+  )
+
+head(unemp_summary)
+```
+
+This shows the top 5 month to month unemployment rate changes. That is captured by the unemployment_rate_change variable. 
+
+```{r}
+unemp_top_increases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_max(unemployment_rate_change, n = 5, with_ties = TRUE)
+
+head(unemp_top_increases_no_covid)  
+```
+
+This shows the top 5 lowest month to month unemployment rate changes. This uses the same variable as before. 
+
+```{r}
+unemp_top_decreases_no_covid <- unemp |> filter(year(date) != 2020) |> slice_min(unemployment_rate_change, n = 5, with_ties = TRUE)
+
+head(unemp_top_decreases_no_covid)
+```
+
+### 3. Visualization
+
+Here are the four 4 required plots. The last one is the one I created. 
+
+This first plot is a line plot of the changing unemployment rate for all four states, and then the country as a whole. 
+
+```{r}
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +        # or geom_col(), geom_point(), etc.
+  labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
+  theme_minimal()
+```
+
+This one splits the previous line plot where we have everything all together into separate line plots where we focus on the states and the country individually. This is done with the facet_wrap(~ region).  
+
+```{r}
+ggplot(unemp, aes(x = date, y = unemployment_rate)) +
+  geom_line() + facet_wrap(~ region)      # or geom_col(), geom_point(), etc.
+  labs(title = "Unemployment Rate over Time", x = "Time (months)", y = "Unemployment Rate (%)") +
+  theme_minimal()
+```
+
+This bar plot uses the summary statistics table to compare the mean unemployment rates by region. 
+
+```{r}
+ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, fill = region)) +
+  labs(
+    title = "Mean Unemployment Rate by Region",
+    x = "Region", 
+    y = "Mean Unemployment Rate"
+  ) + 
+  geom_col()
+```
+
+This is the plot I created. I wanted to plot the month to month changes in unemployment and compare that to the actual unemployment rate by region. I used the same face_wrap(~ region) to do this for the four states and then the country. 
+
+```{r}
+rate_vs_change <- ggplot(unemp, aes(x = date)) + 
+  geom_line(aes(y = unemployment_rate, color = "Unemployment Rate")) + 
+  geom_line(aes(y = unemployment_rate_change, color = "Unemployment Rate Change")) + 
+  facet_wrap(~ region) +
+  labs(
+    title = "Unemployment Rate vs Unemployment Rate Change", 
+    x = "Date",
+    y = "Percentage Point Change",
+    color = "Metric"
+  )
+
+rate_vs_change
+```
+
+### 4. Reflection
+
+
